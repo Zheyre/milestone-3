@@ -1,0 +1,45 @@
+---
+title: "Action vs. Comedy: Two Genres Over Time"
+author: "Zheyre Tolliver"
+format: html
+execute:
+  echo: false
+---
+
+```{r}
+#| message: false
+library(tidyverse)
+library(ggplot2movies)
+```
+
+For my final project, I plan to compare the popularity and sales of two movie genres in the United States: action and comedy. I want to understand which genre audiences choose more often, and whether that has changed over time.
+
+To start, I am using the IMDb movie data in the ggplot2movies package. The most interesting variables for my project are the release year, the genre, the average IMDb rating, the number of votes a movie received (a good measure of popularity), and the budget. Later, I plan to add box office sales from a source like The Numbers so I can compare how much money each genre earns in the United States, not just how many people rate it.
+
+```{r}
+genre_movies <- movies |>
+  filter(year >= 1950, year <= 2004) |>
+  mutate(genre = case_when(
+    Action == 1 & Comedy == 0 ~ "Action",
+    Comedy == 1 & Action == 0 ~ "Comedy"
+  )) |>
+  filter(!is.na(genre))
+
+genre_movies |>
+  summarize(count = n(), .by = c(year, genre)) |>
+  ggplot(aes(x = year, y = count, color = genre)) +
+  geom_line(linewidth = 1.2) +
+  geom_point(size = 1.5) +
+  scale_color_manual(values = c(Action = "#d1495b", Comedy = "#7b2cbf")) +
+  labs(
+    title = "Comedies Far Outnumber Action Movies",
+    subtitle = "Number of movies released each year, 1950 to 2004",
+    x = "Year",
+    y = "Number of movies",
+    color = "Genre",
+    caption = "Source: IMDb data from the ggplot2movies package"
+  ) +
+  theme_minimal(base_size = 13) +
+  theme(plot.title = element_text(face = "bold"),
+        legend.position = "top")
+```
